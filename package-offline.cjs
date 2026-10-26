@@ -1,0 +1,14 @@
+const fs = require('node:fs');
+const path = require('node:path');
+require('./equation-grove/stamp-assets.cjs');
+const root = path.join(__dirname, 'equation-grove', 'dist');
+let html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+const escaped=name=>name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+for (const name of ['styles.css','reports.css','garden.css','trails.css']) html=html.replace(new RegExp('<link rel="stylesheet" href="'+escaped(name)+'(?:\\?[^\"]*)?">'),()=>'<style>\n'+fs.readFileSync(path.join(root,name),'utf8')+'\n</style>');
+const scripts=['math.js','garden.js','vendor/pdf-lib.min.js','reports.js','app.js'];
+for (const name of scripts) html=html.replace(new RegExp('  <script src="'+escaped(name)+'(?:\\?[^\"]*)?" defer></script>\\r?\\n'), '');
+if(/<script[^>]*\ssrc=|<link[^>]*rel="stylesheet"/.test(html))throw Error('Offline packaging left an external script or stylesheet.');
+html = html.replace('</body>', () => scripts.map(name=>'<script>\n'+fs.readFileSync(path.join(root,name),'utf8').replace(/<\/script/gi,'<\\/script')+'\n</script>').join('\n')+'\n<!--\n'+fs.readFileSync(path.join(root,'vendor/pdf-lib-LICENSE.md'),'utf8')+'\n-->\n</body>');
+const output = path.join(__dirname, 'Equation Grove.html');
+fs.writeFileSync(output, html, 'utf8');
+console.log(output);

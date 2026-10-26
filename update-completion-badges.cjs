@@ -1,0 +1,9 @@
+const fs=require('node:fs'),root=__dirname+'/equation-grove/dist/';let code=fs.readFileSync(root+'app.js','utf8');
+function replace(old,next){if(!code.includes(old))throw new Error('Missing badge edit: '+old.slice(0,80));code=code.replace(old,next)}
+replace('  const missions=M.missions;',`  const missions=M.missions;
+  function completionBadge(type){return state.history.some(r=>r.type===type&&r.finished)?'<span class="trail-completed" title="Trail completed. You can play again.">'+icon('check')+' Completed</span>':''}`);
+replace("(m.level==='stretch'?'<span class=\"stretch-badge\">A little further</span>':'')+'</div><div class=\"mission-body\">", "(m.level==='stretch'?'<span class=\"stretch-badge\">A little further</span>':'')+completionBadge(m.key)+'</div><div class=\"mission-body\">");
+replace('<h2 id="optional-story-title">The garden story trail</h2>', '<div class="optional-story-heading"><h2 id="optional-story-title">The garden story trail</h2>\'+completionBadge(\'words\')+\'</div>');
+fs.writeFileSync(root+'app.js',code,'utf8');
+fs.appendFileSync(root+'trails.css','\n.trail-completed{display:inline-flex;align-items:center;gap:5px;padding:6px 9px;border-radius:20px;border:1px solid #b9cfa9;background:#f5faec;color:#3e6234;font-size:10px;font-weight:600;line-height:1;white-space:nowrap}.trail-completed .icon{width:13px;height:13px;stroke-width:2}.mission-art .trail-completed{position:absolute;bottom:10px;right:11px;z-index:1}.optional-story-heading{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:11px}.optional-story-heading h2{margin-bottom:0}@media(max-width:900px){.mission-art .trail-completed{bottom:42px;left:5px;right:5px;justify-content:center;padding:6px 4px;font-size:9px;gap:3px}.mission-art .trail-completed .icon{width:11px;height:11px}}\n','utf8');
+console.log('Completed-trail badges added to all six trails and the optional story trail.');
